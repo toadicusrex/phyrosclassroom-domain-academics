@@ -1,0 +1,31 @@
+<Solution>
+  <Folder Name="/1-Presentation/">
+    <Project Path="1-Presentation/PhyrosClassroom.Academics.Presentation.CommandApi.Tests/PhyrosClassroom.Academics.Presentation.CommandApi.Tests.csproj" />
+    <Project Path="1-Presentation/PhyrosClassroom.Academics.Presentation.CommandApi/PhyrosClassroom.Academics.Presentation.CommandApi.csproj" />
+    <Project Path="1-Presentation/PhyrosClassroom.Academics.Presentation.QueryApi.Tests/PhyrosClassroom.Academics.Presentation.QueryApi.Tests.csproj" />
+    <Project Path="1-Presentation/PhyrosClassroom.Academics.Presentation.QueryApi/PhyrosClassroom.Academics.Presentation.QueryApi.csproj" />
+  </Folder>
+  <Folder Name="/2-Orchestration/">
+    <Project Path="2-Orchestration/PhyrosClassroom.Academics.Orchestration.Default.Tests/PhyrosClassroom.Academics.Orchestration.Default.Tests.csproj" />
+    <Project Path="2-Orchestration/PhyrosClassroom.Academics.Orchestration.Default/PhyrosClassroom.Academics.Orchestration.Default.csproj" />
+    <Project Path="2-Orchestration/PhyrosClassroom.Academics.Orchestration/PhyrosClassroom.Academics.Orchestration.csproj" />
+  </Folder>
+  <Folder Name="/3-Engines/">
+    <Project Path="3-Engines/PhyrosClassroom.Academics.Engines.Default.Tests/PhyrosClassroom.Academics.Engines.Default.Tests.csproj" />
+    <Project Path="3-Engines/PhyrosClassroom.Academics.Engines.Default/PhyrosClassroom.Academics.Engines.Default.csproj" />
+    <Project Path="3-Engines/PhyrosClassroom.Academics.Engines/PhyrosClassroom.Academics.Engines.csproj" />
+  </Folder>
+  <Folder Name="/4-Infrastructure/">
+    <Project Path="4-Infrastructure/PhyrosClassroom.Academics.Infrastructure.Persistence.Default.Tests/PhyrosClassroom.Academics.Infrastructure.Persistence.Default.Tests.csproj" />
+    <Project Path="4-Infrastructure/PhyrosClassroom.Academics.Infrastructure.Persistence.Default/PhyrosClassroom.Academics.Infrastructure.Persistence.Default.csproj" />
+    <Project Path="4-Infrastructure/PhyrosClassroom.Academics.Infrastructure.Persistence/PhyrosClassroom.Academics.Infrastructure.Persistence.csproj" />
+  </Folder>
+  <Folder Name="/5-Models/">
+    <Project Path="5-Models/PhyrosClassroom.Academics.Models.Tests/PhyrosClassroom.Academics.Models.Tests.csproj" />
+    <Project Path="5-Models/PhyrosClassroom.Academics.Models/PhyrosClassroom.Academics.Models.csproj" />
+  </Folder>
+  <Project Path="PhyrosClassroom.Academics.ApplicationCore/PhyrosClassroom.Academics.ApplicationCore.csproj" />
+  <Project Path="PhyrosClassroom.Academics.Composition/PhyrosClassroom.Academics.Composition.csproj" />
+  <Project Path="PhyrosClassroom.Academics.Host.CommandApi/PhyrosClassroom.Academics.Host.CommandApi.csproj" />
+  <Project Path="PhyrosClassroom.Academics.Host.QueryApi/PhyrosClassroom.Academics.Host.QueryApi.csproj" />
+</Solution>
