@@ -101,8 +101,147 @@ public static class CommandApiEndpointRouteBuilderExtensions
             return Results.Ok(academic);
         });
 
+        group.MapPut("/courses/{courseId:guid}", async (
+            Guid courseId,
+            SaveCourseCatalogEntryInput input,
+            ISaveAcademicCourseUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var course = await useCase.ExecuteAsync(
+                new SaveCourseCatalogEntryRequest(
+                    courseId == Guid.Empty ? Guid.NewGuid() : courseId,
+                    input.CourseCode,
+                    input.Title,
+                    input.Description,
+                    input.Department,
+                    input.InstructorName,
+                    input.DeliveryModel,
+                    input.GradeBand,
+                    input.EnrollmentOpen),
+                cancellationToken);
+            return Results.Ok(course);
+        });
+
+        group.MapPut("/assignments/{assignmentId:guid}", async (
+            Guid assignmentId,
+            SaveCourseworkAssignmentInput input,
+            ISaveAcademicAssignmentUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var assignment = await useCase.ExecuteAsync(
+                new SaveCourseworkAssignmentRequest(
+                    assignmentId == Guid.Empty ? Guid.NewGuid() : assignmentId,
+                    input.CourseId,
+                    input.CourseTitle,
+                    input.Title,
+                    input.Description,
+                    input.DueDate,
+                    input.Audience,
+                    input.PublishedByUserId),
+                cancellationToken);
+            return Results.Ok(assignment);
+        });
+
+        group.MapPut("/records/{studentId:guid}", async (
+            Guid studentId,
+            SaveStudentAcademicRecordInput input,
+            ISaveStudentAcademicRecordUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var record = await useCase.ExecuteAsync(
+                new SaveStudentAcademicRecordRequest(
+                    studentId,
+                    input.StudentCode,
+                    input.StudentName,
+                    input.GradeLevel,
+                    input.Courses.Select(course => new Academics.Models.StudentCourseRecord
+                    {
+                        CourseId = course.CourseId,
+                        CourseCode = course.CourseCode,
+                        CourseTitle = course.CourseTitle,
+                        TermName = course.TermName,
+                        TeacherName = course.TeacherName,
+                        FinalGrade = course.FinalGrade,
+                        CreditsEarned = course.CreditsEarned,
+                        Status = course.Status,
+                    }).ToArray(),
+                    input.TranscriptTerms.Select(term => new Academics.Models.StudentTranscriptTerm
+                    {
+                        SchoolYear = term.SchoolYear,
+                        TermName = term.TermName,
+                        TermGpa = term.TermGpa,
+                        Courses = term.Courses.Select(course => new Academics.Models.StudentCourseRecord
+                        {
+                            CourseId = course.CourseId,
+                            CourseCode = course.CourseCode,
+                            CourseTitle = course.CourseTitle,
+                            TermName = course.TermName,
+                            TeacherName = course.TeacherName,
+                            FinalGrade = course.FinalGrade,
+                            CreditsEarned = course.CreditsEarned,
+                            Status = course.Status,
+                        }).ToList(),
+                    }).ToArray(),
+                    input.CumulativeGpa),
+                cancellationToken);
+            return Results.Ok(record);
+        });
+
         return endpoints;
     }
+}
+
+public sealed class SaveCourseCatalogEntryInput
+{
+    public string CourseCode { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public string Department { get; set; } = string.Empty;
+    public string InstructorName { get; set; } = string.Empty;
+    public string DeliveryModel { get; set; } = string.Empty;
+    public string GradeBand { get; set; } = string.Empty;
+    public bool EnrollmentOpen { get; set; }
+}
+
+public sealed class SaveCourseworkAssignmentInput
+{
+    public Guid CourseId { get; set; }
+    public string CourseTitle { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public DateOnly DueDate { get; set; }
+    public string Audience { get; set; } = "All";
+    public string PublishedByUserId { get; set; } = string.Empty;
+}
+
+public sealed class SaveStudentAcademicRecordInput
+{
+    public string StudentCode { get; set; } = string.Empty;
+    public string StudentName { get; set; } = string.Empty;
+    public string GradeLevel { get; set; } = string.Empty;
+    public decimal? CumulativeGpa { get; set; }
+    public List<SaveStudentCourseRecordInput> Courses { get; set; } = [];
+    public List<SaveStudentTranscriptTermInput> TranscriptTerms { get; set; } = [];
+}
+
+public sealed class SaveStudentCourseRecordInput
+{
+    public Guid CourseId { get; set; }
+    public string CourseCode { get; set; } = string.Empty;
+    public string CourseTitle { get; set; } = string.Empty;
+    public string TermName { get; set; } = string.Empty;
+    public string TeacherName { get; set; } = string.Empty;
+    public string FinalGrade { get; set; } = string.Empty;
+    public decimal? CreditsEarned { get; set; }
+    public string Status { get; set; } = string.Empty;
+}
+
+public sealed class SaveStudentTranscriptTermInput
+{
+    public string SchoolYear { get; set; } = string.Empty;
+    public string TermName { get; set; } = string.Empty;
+    public decimal? TermGpa { get; set; }
+    public List<SaveStudentCourseRecordInput> Courses { get; set; } = [];
 }
 
 public sealed class UpdateAcademicProfileInput

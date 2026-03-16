@@ -21,6 +21,9 @@ public static class AcademicServiceCollectionExtensions
         services.AddScoped<IGetAcademicByIdUseCase, GetAcademicByIdUseCase>();
         services.AddScoped<IGetAcademicAtPointInTimeUseCase, GetAcademicAtPointInTimeUseCase>();
         services.AddScoped<IGetAcademicEventHistoryUseCase, GetAcademicEventHistoryUseCase>();
+        services.AddScoped<ISaveAcademicCourseUseCase, SaveAcademicCourseUseCase>();
+        services.AddScoped<ISaveAcademicAssignmentUseCase, SaveAcademicAssignmentUseCase>();
+        services.AddScoped<ISaveStudentAcademicRecordUseCase, SaveStudentAcademicRecordUseCase>();
 
         return services;
     }
@@ -33,6 +36,10 @@ public static class AcademicServiceCollectionExtensions
         services.AddScoped<IListAcademicsUseCase, ListAcademicsUseCase>();
         services.AddScoped<IGetAcademicReadModelByIdUseCase, GetAcademicReadModelByIdUseCase>();
         services.AddScoped<IGetAcademicReadModelBySubjectIdUseCase, GetAcademicReadModelBySubjectIdUseCase>();
+        services.AddScoped<IListAcademicCoursesUseCase, ListAcademicCoursesUseCase>();
+        services.AddScoped<IListAcademicAssignmentsUseCase, ListAcademicAssignmentsUseCase>();
+        services.AddScoped<IListStudentAcademicRecordsUseCase, ListStudentAcademicRecordsUseCase>();
+        services.AddScoped<IGetStudentAcademicRecordByStudentIdUseCase, GetStudentAcademicRecordByStudentIdUseCase>();
 
         return services;
     }
@@ -48,6 +55,7 @@ public static class AcademicServiceCollectionExtensions
         services.AddSingleton<IAcademicEventStore, FileAcademicEventStore>();
         services.AddSingleton<IAcademicReadModelStore, FileAcademicReadModelStore>();
         services.AddSingleton<IAcademicHydratedModelCache, InMemoryAcademicHydratedModelCache>();
+        services.AddSingleton<IAcademicCatalogStore, FileAcademicCatalogStore>();
         services.AddSingleton<IAcademicCodeGenerator, AcademicCodeGenerator>();
 
         return services;

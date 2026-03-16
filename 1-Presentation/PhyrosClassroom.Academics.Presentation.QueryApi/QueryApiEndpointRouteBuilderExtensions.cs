@@ -37,6 +37,39 @@ public static class QueryApiEndpointRouteBuilderExtensions
             return academic is null ? Results.NotFound() : Results.Ok(academic);
         });
 
+        group.MapGet("/courses", async (
+            IListAcademicCoursesUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var courses = await useCase.ExecuteAsync(cancellationToken);
+            return Results.Ok(courses);
+        });
+
+        group.MapGet("/assignments", async (
+            IListAcademicAssignmentsUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var assignments = await useCase.ExecuteAsync(cancellationToken);
+            return Results.Ok(assignments);
+        });
+
+        group.MapGet("/records", async (
+            IListStudentAcademicRecordsUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var records = await useCase.ExecuteAsync(cancellationToken);
+            return Results.Ok(records);
+        });
+
+        group.MapGet("/records/{studentId:guid}", async (
+            Guid studentId,
+            IGetStudentAcademicRecordByStudentIdUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var record = await useCase.ExecuteAsync(studentId, cancellationToken);
+            return record is null ? Results.NotFound() : Results.Ok(record);
+        });
+
         return endpoints;
     }
 }
