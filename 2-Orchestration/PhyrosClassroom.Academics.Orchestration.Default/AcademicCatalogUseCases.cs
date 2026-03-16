@@ -55,6 +55,82 @@ public sealed class SaveAcademicAssignmentUseCase(IAcademicCatalogStore store) :
             cancellationToken);
 }
 
+public sealed class ListAcademicSectionsUseCase(IAcademicCatalogStore store) : IListAcademicSectionsUseCase
+{
+    public Task<IReadOnlyList<CourseSection>> ExecuteAsync(CancellationToken cancellationToken = default) =>
+        store.ListSectionsAsync(cancellationToken);
+}
+
+public sealed class SaveAcademicSectionUseCase(IAcademicCatalogStore store) : ISaveAcademicSectionUseCase
+{
+    public Task<CourseSection> ExecuteAsync(SaveCourseSectionRequest request, CancellationToken cancellationToken = default) =>
+        store.SaveSectionAsync(
+            new CourseSection
+            {
+                SectionId = request.SectionId,
+                CourseId = request.CourseId,
+                CourseCode = request.CourseCode.Trim(),
+                CourseTitle = request.CourseTitle.Trim(),
+                SectionCode = request.SectionCode.Trim(),
+                TermName = request.TermName.Trim(),
+                SchoolYear = request.SchoolYear.Trim(),
+                InstructorName = request.InstructorName.Trim(),
+                MeetingSchedule = request.MeetingSchedule.Trim(),
+                DeliveryModel = request.DeliveryModel.Trim(),
+                EnrollmentOpen = request.EnrollmentOpen,
+                UpdatedAtUtc = DateTimeOffset.UtcNow,
+            },
+            cancellationToken);
+}
+
+public sealed class ListSectionRosterEntriesUseCase(IAcademicCatalogStore store) : IListSectionRosterEntriesUseCase
+{
+    public Task<IReadOnlyList<SectionRosterEntry>> ExecuteAsync(Guid sectionId, CancellationToken cancellationToken = default) =>
+        store.ListRosterEntriesAsync(sectionId, cancellationToken);
+}
+
+public sealed class SaveSectionRosterEntryUseCase(IAcademicCatalogStore store) : ISaveSectionRosterEntryUseCase
+{
+    public Task<SectionRosterEntry> ExecuteAsync(SaveSectionRosterEntryRequest request, CancellationToken cancellationToken = default) =>
+        store.SaveRosterEntryAsync(
+            new SectionRosterEntry
+            {
+                SectionId = request.SectionId,
+                StudentId = request.StudentId,
+                StudentCode = request.StudentCode.Trim(),
+                StudentName = request.StudentName.Trim(),
+                EnrollmentStatus = request.EnrollmentStatus.Trim(),
+                EnrolledAtUtc = DateTimeOffset.UtcNow,
+                UpdatedAtUtc = DateTimeOffset.UtcNow,
+            },
+            cancellationToken);
+}
+
+public sealed class ListGradebookEntriesUseCase(IAcademicCatalogStore store) : IListGradebookEntriesUseCase
+{
+    public Task<IReadOnlyList<GradebookEntry>> ExecuteAsync(Guid sectionId, CancellationToken cancellationToken = default) =>
+        store.ListGradebookEntriesAsync(sectionId, cancellationToken);
+}
+
+public sealed class SaveGradebookEntryUseCase(IAcademicCatalogStore store) : ISaveGradebookEntryUseCase
+{
+    public Task<GradebookEntry> ExecuteAsync(SaveGradebookEntryRequest request, CancellationToken cancellationToken = default) =>
+        store.SaveGradebookEntryAsync(
+            new GradebookEntry
+            {
+                SectionId = request.SectionId,
+                StudentId = request.StudentId,
+                AssignmentId = request.AssignmentId,
+                AssignmentTitle = request.AssignmentTitle.Trim(),
+                ScoreEarned = request.ScoreEarned,
+                ScorePossible = request.ScorePossible,
+                Status = request.Status.Trim(),
+                TeacherComment = string.IsNullOrWhiteSpace(request.TeacherComment) ? null : request.TeacherComment.Trim(),
+                UpdatedAtUtc = DateTimeOffset.UtcNow,
+            },
+            cancellationToken);
+}
+
 public sealed class ListStudentAcademicRecordsUseCase(IAcademicCatalogStore store) : IListStudentAcademicRecordsUseCase
 {
     public Task<IReadOnlyList<StudentAcademicRecord>> ExecuteAsync(CancellationToken cancellationToken = default) =>

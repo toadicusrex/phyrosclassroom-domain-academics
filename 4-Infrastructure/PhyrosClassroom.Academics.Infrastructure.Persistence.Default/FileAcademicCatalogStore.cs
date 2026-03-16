@@ -54,6 +54,73 @@ public sealed class FileAcademicCatalogStore(IOptions<AcademicStorageOptions> op
         return assignment;
     }
 
+    public Task<IReadOnlyList<CourseSection>> ListSectionsAsync(CancellationToken cancellationToken = default) =>
+        ReadListAsync<CourseSection>(GetSectionsPath(), cancellationToken);
+
+    public async Task<CourseSection> SaveSectionAsync(CourseSection section, CancellationToken cancellationToken = default)
+    {
+        var sections = (await ReadListAsync<CourseSection>(GetSectionsPath(), cancellationToken)).ToList();
+        var index = sections.FindIndex(existing => existing.SectionId == section.SectionId);
+        if (index >= 0)
+        {
+            sections[index] = section;
+        }
+        else
+        {
+            sections.Add(section);
+        }
+
+        await WriteListAsync(GetSectionsPath(), sections, cancellationToken);
+        return section;
+    }
+
+    public async Task<IReadOnlyList<SectionRosterEntry>> ListRosterEntriesAsync(Guid sectionId, CancellationToken cancellationToken = default) =>
+        (await ReadListAsync<SectionRosterEntry>(GetRosterPath(), cancellationToken))
+            .Where(entry => entry.SectionId == sectionId)
+            .ToList();
+
+    public async Task<SectionRosterEntry> SaveRosterEntryAsync(SectionRosterEntry entry, CancellationToken cancellationToken = default)
+    {
+        var entries = (await ReadListAsync<SectionRosterEntry>(GetRosterPath(), cancellationToken)).ToList();
+        var index = entries.FindIndex(existing => existing.SectionId == entry.SectionId && existing.StudentId == entry.StudentId);
+        if (index >= 0)
+        {
+            entries[index] = entry;
+        }
+        else
+        {
+            entries.Add(entry);
+        }
+
+        await WriteListAsync(GetRosterPath(), entries, cancellationToken);
+        return entry;
+    }
+
+    public async Task<IReadOnlyList<GradebookEntry>> ListGradebookEntriesAsync(Guid sectionId, CancellationToken cancellationToken = default) =>
+        (await ReadListAsync<GradebookEntry>(GetGradebookPath(), cancellationToken))
+            .Where(entry => entry.SectionId == sectionId)
+            .ToList();
+
+    public async Task<GradebookEntry> SaveGradebookEntryAsync(GradebookEntry entry, CancellationToken cancellationToken = default)
+    {
+        var entries = (await ReadListAsync<GradebookEntry>(GetGradebookPath(), cancellationToken)).ToList();
+        var index = entries.FindIndex(existing =>
+            existing.SectionId == entry.SectionId &&
+            existing.StudentId == entry.StudentId &&
+            existing.AssignmentId == entry.AssignmentId);
+        if (index >= 0)
+        {
+            entries[index] = entry;
+        }
+        else
+        {
+            entries.Add(entry);
+        }
+
+        await WriteListAsync(GetGradebookPath(), entries, cancellationToken);
+        return entry;
+    }
+
     public Task<IReadOnlyList<StudentAcademicRecord>> ListRecordsAsync(CancellationToken cancellationToken = default) =>
         ReadListAsync<StudentAcademicRecord>(GetRecordsPath(), cancellationToken);
 
@@ -101,5 +168,8 @@ public sealed class FileAcademicCatalogStore(IOptions<AcademicStorageOptions> op
 
     private string GetCoursesPath() => Path.Combine(_options.BasePath, "academic-courses.json");
     private string GetAssignmentsPath() => Path.Combine(_options.BasePath, "academic-assignments.json");
+    private string GetSectionsPath() => Path.Combine(_options.BasePath, "academic-sections.json");
+    private string GetRosterPath() => Path.Combine(_options.BasePath, "academic-roster.json");
+    private string GetGradebookPath() => Path.Combine(_options.BasePath, "academic-gradebook.json");
     private string GetRecordsPath() => Path.Combine(_options.BasePath, "academic-records.json");
 }

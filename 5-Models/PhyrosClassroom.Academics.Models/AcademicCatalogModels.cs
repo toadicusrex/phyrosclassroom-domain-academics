@@ -27,6 +27,46 @@ public sealed class CourseworkAssignment
     public DateTimeOffset UpdatedAtUtc { get; set; }
 }
 
+public sealed class CourseSection
+{
+    public Guid SectionId { get; set; }
+    public Guid CourseId { get; set; }
+    public string CourseCode { get; set; } = string.Empty;
+    public string CourseTitle { get; set; } = string.Empty;
+    public string SectionCode { get; set; } = string.Empty;
+    public string TermName { get; set; } = string.Empty;
+    public string SchoolYear { get; set; } = string.Empty;
+    public string InstructorName { get; set; } = string.Empty;
+    public string MeetingSchedule { get; set; } = string.Empty;
+    public string DeliveryModel { get; set; } = string.Empty;
+    public bool EnrollmentOpen { get; set; }
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+}
+
+public sealed class SectionRosterEntry
+{
+    public Guid SectionId { get; set; }
+    public Guid StudentId { get; set; }
+    public string StudentCode { get; set; } = string.Empty;
+    public string StudentName { get; set; } = string.Empty;
+    public string EnrollmentStatus { get; set; } = string.Empty;
+    public DateTimeOffset EnrolledAtUtc { get; set; }
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+}
+
+public sealed class GradebookEntry
+{
+    public Guid SectionId { get; set; }
+    public Guid StudentId { get; set; }
+    public Guid AssignmentId { get; set; }
+    public string AssignmentTitle { get; set; } = string.Empty;
+    public decimal? ScoreEarned { get; set; }
+    public decimal? ScorePossible { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string? TeacherComment { get; set; }
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+}
+
 public sealed class StudentAcademicRecord
 {
     public Guid StudentId { get; set; }

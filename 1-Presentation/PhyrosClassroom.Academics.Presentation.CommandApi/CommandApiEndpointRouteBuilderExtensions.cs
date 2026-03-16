@@ -142,6 +142,69 @@ public static class CommandApiEndpointRouteBuilderExtensions
             return Results.Ok(assignment);
         });
 
+        group.MapPut("/sections/{sectionId:guid}", async (
+            Guid sectionId,
+            SaveCourseSectionInput input,
+            ISaveAcademicSectionUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var section = await useCase.ExecuteAsync(
+                new SaveCourseSectionRequest(
+                    sectionId == Guid.Empty ? Guid.NewGuid() : sectionId,
+                    input.CourseId,
+                    input.CourseCode,
+                    input.CourseTitle,
+                    input.SectionCode,
+                    input.TermName,
+                    input.SchoolYear,
+                    input.InstructorName,
+                    input.MeetingSchedule,
+                    input.DeliveryModel,
+                    input.EnrollmentOpen),
+                cancellationToken);
+            return Results.Ok(section);
+        });
+
+        group.MapPut("/sections/{sectionId:guid}/roster/{studentId:guid}", async (
+            Guid sectionId,
+            Guid studentId,
+            SaveSectionRosterEntryInput input,
+            ISaveSectionRosterEntryUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var entry = await useCase.ExecuteAsync(
+                new SaveSectionRosterEntryRequest(
+                    sectionId,
+                    studentId,
+                    input.StudentCode,
+                    input.StudentName,
+                    input.EnrollmentStatus),
+                cancellationToken);
+            return Results.Ok(entry);
+        });
+
+        group.MapPut("/sections/{sectionId:guid}/gradebook/{studentId:guid}/{assignmentId:guid}", async (
+            Guid sectionId,
+            Guid studentId,
+            Guid assignmentId,
+            SaveGradebookEntryInput input,
+            ISaveGradebookEntryUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var entry = await useCase.ExecuteAsync(
+                new SaveGradebookEntryRequest(
+                    sectionId,
+                    studentId,
+                    assignmentId,
+                    input.AssignmentTitle,
+                    input.ScoreEarned,
+                    input.ScorePossible,
+                    input.Status,
+                    input.TeacherComment),
+                cancellationToken);
+            return Results.Ok(entry);
+        });
+
         group.MapPut("/records/{studentId:guid}", async (
             Guid studentId,
             SaveStudentAcademicRecordInput input,
@@ -212,6 +275,36 @@ public sealed class SaveCourseworkAssignmentInput
     public DateOnly DueDate { get; set; }
     public string Audience { get; set; } = "All";
     public string PublishedByUserId { get; set; } = string.Empty;
+}
+
+public sealed class SaveCourseSectionInput
+{
+    public Guid CourseId { get; set; }
+    public string CourseCode { get; set; } = string.Empty;
+    public string CourseTitle { get; set; } = string.Empty;
+    public string SectionCode { get; set; } = string.Empty;
+    public string TermName { get; set; } = string.Empty;
+    public string SchoolYear { get; set; } = string.Empty;
+    public string InstructorName { get; set; } = string.Empty;
+    public string MeetingSchedule { get; set; } = string.Empty;
+    public string DeliveryModel { get; set; } = string.Empty;
+    public bool EnrollmentOpen { get; set; }
+}
+
+public sealed class SaveSectionRosterEntryInput
+{
+    public string StudentCode { get; set; } = string.Empty;
+    public string StudentName { get; set; } = string.Empty;
+    public string EnrollmentStatus { get; set; } = string.Empty;
+}
+
+public sealed class SaveGradebookEntryInput
+{
+    public string AssignmentTitle { get; set; } = string.Empty;
+    public decimal? ScoreEarned { get; set; }
+    public decimal? ScorePossible { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string? TeacherComment { get; set; }
 }
 
 public sealed class SaveStudentAcademicRecordInput

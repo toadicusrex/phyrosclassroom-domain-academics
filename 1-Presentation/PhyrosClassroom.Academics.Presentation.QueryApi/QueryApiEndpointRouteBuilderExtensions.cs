@@ -53,6 +53,32 @@ public static class QueryApiEndpointRouteBuilderExtensions
             return Results.Ok(assignments);
         });
 
+        group.MapGet("/sections", async (
+            IListAcademicSectionsUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var sections = await useCase.ExecuteAsync(cancellationToken);
+            return Results.Ok(sections);
+        });
+
+        group.MapGet("/sections/{sectionId:guid}/roster", async (
+            Guid sectionId,
+            IListSectionRosterEntriesUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var entries = await useCase.ExecuteAsync(sectionId, cancellationToken);
+            return Results.Ok(entries);
+        });
+
+        group.MapGet("/sections/{sectionId:guid}/gradebook", async (
+            Guid sectionId,
+            IListGradebookEntriesUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var entries = await useCase.ExecuteAsync(sectionId, cancellationToken);
+            return Results.Ok(entries);
+        });
+
         group.MapGet("/records", async (
             IListStudentAcademicRecordsUseCase useCase,
             CancellationToken cancellationToken) =>
