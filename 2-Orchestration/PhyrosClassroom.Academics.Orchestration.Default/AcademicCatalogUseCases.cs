@@ -379,3 +379,84 @@ public sealed class ListAcademicOperationalAlertsUseCase(IAcademicCatalogStore s
             .ToArray();
     }
 }
+
+public sealed class ListSectionOperationsSummariesUseCase(IAcademicCatalogStore store) : IListSectionOperationsSummariesUseCase
+{
+    public async Task<IReadOnlyList<SectionOperationsSummary>> ExecuteAsync(DateOnly? asOfDate = null, CancellationToken cancellationToken = default)
+    {
+        var effectiveDate = asOfDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var sections = await store.ListSectionsAsync(cancellationToken);
+        var assignments = await store.ListAssignmentsAsync(cancellationToken);
+        var summaries = new List<SectionOperationsSummary>(sections.Count);
+
+        foreach (var section in sections)
+        {
+            var roster = (await store.ListRosterEntriesAsync(section.SectionId, cancellationToken))
+                .Where(entry => !string.Equals(entry.EnrollmentStatus, "Dropped", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+            var gradebook = await store.ListGradebookEntriesAsync(section.SectionId, cancellationToken);
+            var attendance = await store.ListAttendanceEntriesAsync(section.SectionId, cancellationToken);
+            var sectionAssignments = assignments.Where(assignment => assignment.CourseId == section.CourseId).ToArray();
+
+            var failingStudentCount = roster.Count(student => gradebook.Any(entry =>
+                entry.StudentId == student.StudentId &&
+                entry.ScoreEarned.HasValue &&
+                entry.ScorePossible.HasValue &&
+                entry.ScorePossible.Value > 0m &&
+                entry.ScoreEarned.Value / entry.ScorePossible.Value < 0.70m));
+
+            var attendanceRiskCount = roster.Count(student =>
+                attendance.Count(entry =>
+                    entry.StudentId == student.StudentId &&
+                    (string.Equals(entry.Status, "Absent", StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(entry.Status, "Unexcused", StringComparison.OrdinalIgnoreCase))) >= 3);
+
+            var missingSubmissionCount = 0;
+            foreach (var assignment in sectionAssignments.Where(assignment => assignment.DueDate < effectiveDate))
+            {
+                var submissions = await store.ListAssignmentSubmissionsAsync(section.SectionId, assignment.AssignmentId, cancellationToken);
+                missingSubmissionCount += roster.Count(student =>
+                {
+                    var submission = submissions.FirstOrDefault(entry => entry.StudentId == student.StudentId);
+                    return submission is null ||
+                           string.Equals(submission.Status, "Missing", StringComparison.OrdinalIgnoreCase) ||
+                           string.Equals(submission.Status, "NotSubmitted", StringComparison.OrdinalIgnoreCase);
+                });
+            }
+
+            var scoredEntries = gradebook
+                .Where(entry => entry.ScoreEarned.HasValue && entry.ScorePossible.HasValue && entry.ScorePossible.Value > 0m)
+                .ToArray();
+            decimal? averageScore = scoredEntries.Length == 0
+                ? null
+                : Math.Round(scoredEntries.Average(entry => entry.ScoreEarned!.Value / entry.ScorePossible!.Value * 100m), 1);
+
+            summaries.Add(new SectionOperationsSummary
+            {
+                SectionId = section.SectionId,
+                SectionCode = section.SectionCode,
+                CourseTitle = section.CourseTitle,
+                TermName = section.TermName,
+                InstructorName = section.InstructorName,
+                ActiveRosterCount = roster.Length,
+                MissingSubmissionCount = missingSubmissionCount,
+                AttendanceRiskCount = attendanceRiskCount,
+                FailingStudentCount = failingStudentCount,
+                AverageScorePercent = averageScore,
+                UpdatedAtUtc = new[]
+                    {
+                        section.UpdatedAtUtc,
+                        roster.Select(entry => entry.UpdatedAtUtc).DefaultIfEmpty(section.UpdatedAtUtc).Max(),
+                        gradebook.Select(entry => entry.UpdatedAtUtc).DefaultIfEmpty(section.UpdatedAtUtc).Max(),
+                        attendance.Select(entry => entry.UpdatedAtUtc).DefaultIfEmpty(section.UpdatedAtUtc).Max(),
+                    }
+                    .Max(),
+            });
+        }
+
+        return summaries
+            .OrderByDescending(summary => summary.MissingSubmissionCount + summary.AttendanceRiskCount + summary.FailingStudentCount)
+            .ThenBy(summary => summary.SectionCode, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+}

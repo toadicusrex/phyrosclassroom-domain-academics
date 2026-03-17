@@ -133,6 +133,15 @@ public static class QueryApiEndpointRouteBuilderExtensions
             return Results.Ok(alerts);
         });
 
+        group.MapGet("/sections/operations-summary", async (
+            DateOnly? asOfDate,
+            IListSectionOperationsSummariesUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var summaries = await useCase.ExecuteAsync(asOfDate, cancellationToken);
+            return Results.Ok(summaries);
+        });
+
         return endpoints;
     }
 }

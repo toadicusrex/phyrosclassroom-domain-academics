@@ -96,3 +96,8 @@ public interface IListAcademicOperationalAlertsUseCase
 {
     Task<IReadOnlyList<AcademicOperationalAlert>> ExecuteAsync(DateOnly? asOfDate = null, CancellationToken cancellationToken = default);
 }
+
+public interface IListSectionOperationsSummariesUseCase
+{
+    Task<IReadOnlyList<SectionOperationsSummary>> ExecuteAsync(DateOnly? asOfDate = null, CancellationToken cancellationToken = default);
+}
