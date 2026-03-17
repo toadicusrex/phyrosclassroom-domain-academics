@@ -101,3 +101,8 @@ public interface IListSectionOperationsSummariesUseCase
 {
     Task<IReadOnlyList<SectionOperationsSummary>> ExecuteAsync(DateOnly? asOfDate = null, CancellationToken cancellationToken = default);
 }
+
+public interface IListTranscriptExportRowsUseCase
+{
+    Task<IReadOnlyList<TranscriptExportRow>> ExecuteAsync(CancellationToken cancellationToken = default);
+}

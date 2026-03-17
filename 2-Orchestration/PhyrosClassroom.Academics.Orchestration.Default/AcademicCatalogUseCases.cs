@@ -460,3 +460,35 @@ public sealed class ListSectionOperationsSummariesUseCase(IAcademicCatalogStore 
             .ToArray();
     }
 }
+
+public sealed class ListTranscriptExportRowsUseCase(IAcademicCatalogStore store) : IListTranscriptExportRowsUseCase
+{
+    public async Task<IReadOnlyList<TranscriptExportRow>> ExecuteAsync(CancellationToken cancellationToken = default)
+    {
+        var records = await store.ListRecordsAsync(cancellationToken);
+
+        return records
+            .SelectMany(record => record.TranscriptTerms.SelectMany(term => term.Courses.Select(course => new TranscriptExportRow
+            {
+                StudentId = record.StudentId,
+                StudentCode = record.StudentCode,
+                StudentName = record.StudentName,
+                GradeLevel = record.GradeLevel,
+                SchoolYear = term.SchoolYear,
+                TermName = term.TermName,
+                CourseCode = course.CourseCode,
+                CourseTitle = course.CourseTitle,
+                TeacherName = course.TeacherName,
+                FinalGrade = course.FinalGrade,
+                CreditsEarned = course.CreditsEarned,
+                TermGpa = term.TermGpa,
+                CumulativeGpa = record.CumulativeGpa,
+                Status = course.Status,
+            })))
+            .OrderBy(row => row.StudentName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(row => row.SchoolYear, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(row => row.TermName, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(row => row.CourseCode, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+}

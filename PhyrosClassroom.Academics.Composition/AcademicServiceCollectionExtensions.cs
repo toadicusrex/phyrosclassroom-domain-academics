@@ -53,6 +53,7 @@ public static class AcademicServiceCollectionExtensions
         services.AddScoped<IGetStudentTranscriptSummaryByStudentIdUseCase, GetStudentTranscriptSummaryByStudentIdUseCase>();
         services.AddScoped<IListAcademicOperationalAlertsUseCase, ListAcademicOperationalAlertsUseCase>();
         services.AddScoped<IListSectionOperationsSummariesUseCase, ListSectionOperationsSummariesUseCase>();
+        services.AddScoped<IListTranscriptExportRowsUseCase, ListTranscriptExportRowsUseCase>();
 
         return services;
     }

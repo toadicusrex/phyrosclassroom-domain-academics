@@ -142,6 +142,14 @@ public static class QueryApiEndpointRouteBuilderExtensions
             return Results.Ok(summaries);
         });
 
+        group.MapGet("/records/export", async (
+            IListTranscriptExportRowsUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var rows = await useCase.ExecuteAsync(cancellationToken);
+            return Results.Ok(rows);
+        });
+
         return endpoints;
     }
 }
