@@ -67,6 +67,38 @@ public sealed class GradebookEntry
     public DateTimeOffset UpdatedAtUtc { get; set; }
 }
 
+public sealed class AttendanceEntry
+{
+    public Guid SectionId { get; set; }
+    public Guid StudentId { get; set; }
+    public DateOnly AttendanceDate { get; set; }
+    public string StudentCode { get; set; } = string.Empty;
+    public string StudentName { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public int? MinutesPresent { get; set; }
+    public string? Notes { get; set; }
+    public string RecordedByUserId { get; set; } = string.Empty;
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+}
+
+public sealed class AssignmentSubmission
+{
+    public Guid SectionId { get; set; }
+    public Guid AssignmentId { get; set; }
+    public Guid StudentId { get; set; }
+    public string StudentCode { get; set; } = string.Empty;
+    public string StudentName { get; set; } = string.Empty;
+    public string AssignmentTitle { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public DateTimeOffset SubmittedAtUtc { get; set; }
+    public string SubmissionType { get; set; } = string.Empty;
+    public string ArtifactLabel { get; set; } = string.Empty;
+    public string? Notes { get; set; }
+    public DateTimeOffset? ReviewedAtUtc { get; set; }
+    public string? ReviewedByUserId { get; set; }
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+}
+
 public sealed class StudentAcademicRecord
 {
     public Guid StudentId { get; set; }

@@ -131,6 +131,62 @@ public sealed class SaveGradebookEntryUseCase(IAcademicCatalogStore store) : ISa
             cancellationToken);
 }
 
+public sealed class ListAttendanceEntriesUseCase(IAcademicCatalogStore store) : IListAttendanceEntriesUseCase
+{
+    public Task<IReadOnlyList<AttendanceEntry>> ExecuteAsync(Guid sectionId, CancellationToken cancellationToken = default) =>
+        store.ListAttendanceEntriesAsync(sectionId, cancellationToken);
+}
+
+public sealed class SaveAttendanceEntryUseCase(IAcademicCatalogStore store) : ISaveAttendanceEntryUseCase
+{
+    public Task<AttendanceEntry> ExecuteAsync(SaveAttendanceEntryRequest request, CancellationToken cancellationToken = default) =>
+        store.SaveAttendanceEntryAsync(
+            new AttendanceEntry
+            {
+                SectionId = request.SectionId,
+                StudentId = request.StudentId,
+                AttendanceDate = request.AttendanceDate,
+                StudentCode = request.StudentCode.Trim(),
+                StudentName = request.StudentName.Trim(),
+                Status = request.Status.Trim(),
+                MinutesPresent = request.MinutesPresent,
+                Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(),
+                RecordedByUserId = request.RecordedByUserId.Trim(),
+                UpdatedAtUtc = DateTimeOffset.UtcNow,
+            },
+            cancellationToken);
+}
+
+public sealed class ListAssignmentSubmissionsUseCase(IAcademicCatalogStore store) : IListAssignmentSubmissionsUseCase
+{
+    public Task<IReadOnlyList<AssignmentSubmission>> ExecuteAsync(Guid sectionId, Guid assignmentId, CancellationToken cancellationToken = default) =>
+        store.ListAssignmentSubmissionsAsync(sectionId, assignmentId, cancellationToken);
+}
+
+public sealed class SaveAssignmentSubmissionUseCase(IAcademicCatalogStore store) : ISaveAssignmentSubmissionUseCase
+{
+    public Task<AssignmentSubmission> ExecuteAsync(SaveAssignmentSubmissionRequest request, CancellationToken cancellationToken = default) =>
+        store.SaveAssignmentSubmissionAsync(
+            new AssignmentSubmission
+            {
+                SectionId = request.SectionId,
+                AssignmentId = request.AssignmentId,
+                StudentId = request.StudentId,
+                StudentCode = request.StudentCode.Trim(),
+                StudentName = request.StudentName.Trim(),
+                AssignmentTitle = request.AssignmentTitle.Trim(),
+                Status = request.Status.Trim(),
+                SubmittedAtUtc = request.SubmittedAtUtc,
+                SubmissionType = request.SubmissionType.Trim(),
+                ArtifactLabel = request.ArtifactLabel.Trim(),
+                Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(),
+                ReviewedAtUtc = request.ReviewedAtUtc,
+                ReviewedByUserId = string.IsNullOrWhiteSpace(request.ReviewedByUserId) ? null : request.ReviewedByUserId.Trim(),
+                UpdatedAtUtc = DateTimeOffset.UtcNow,
+            },
+            cancellationToken);
+}
+
 public sealed class ListStudentAcademicRecordsUseCase(IAcademicCatalogStore store) : IListStudentAcademicRecordsUseCase
 {
     public Task<IReadOnlyList<StudentAcademicRecord>> ExecuteAsync(CancellationToken cancellationToken = default) =>

@@ -53,6 +53,32 @@ public sealed record SaveGradebookEntryRequest(
     string Status,
     string? TeacherComment);
 
+public sealed record SaveAttendanceEntryRequest(
+    Guid SectionId,
+    Guid StudentId,
+    DateOnly AttendanceDate,
+    string StudentCode,
+    string StudentName,
+    string Status,
+    int? MinutesPresent,
+    string? Notes,
+    string RecordedByUserId);
+
+public sealed record SaveAssignmentSubmissionRequest(
+    Guid SectionId,
+    Guid AssignmentId,
+    Guid StudentId,
+    string StudentCode,
+    string StudentName,
+    string AssignmentTitle,
+    string Status,
+    DateTimeOffset SubmittedAtUtc,
+    string SubmissionType,
+    string ArtifactLabel,
+    string? Notes,
+    DateTimeOffset? ReviewedAtUtc,
+    string? ReviewedByUserId);
+
 public sealed record SaveStudentAcademicRecordRequest(
     Guid StudentId,
     string StudentCode,

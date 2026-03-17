@@ -205,6 +205,55 @@ public static class CommandApiEndpointRouteBuilderExtensions
             return Results.Ok(entry);
         });
 
+        group.MapPut("/sections/{sectionId:guid}/attendance/{studentId:guid}", async (
+            Guid sectionId,
+            Guid studentId,
+            SaveAttendanceEntryInput input,
+            ISaveAttendanceEntryUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var entry = await useCase.ExecuteAsync(
+                new SaveAttendanceEntryRequest(
+                    sectionId,
+                    studentId,
+                    input.AttendanceDate,
+                    input.StudentCode,
+                    input.StudentName,
+                    input.Status,
+                    input.MinutesPresent,
+                    input.Notes,
+                    input.RecordedByUserId),
+                cancellationToken);
+            return Results.Ok(entry);
+        });
+
+        group.MapPut("/sections/{sectionId:guid}/assignments/{assignmentId:guid}/submissions/{studentId:guid}", async (
+            Guid sectionId,
+            Guid assignmentId,
+            Guid studentId,
+            SaveAssignmentSubmissionInput input,
+            ISaveAssignmentSubmissionUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var entry = await useCase.ExecuteAsync(
+                new SaveAssignmentSubmissionRequest(
+                    sectionId,
+                    assignmentId,
+                    studentId,
+                    input.StudentCode,
+                    input.StudentName,
+                    input.AssignmentTitle,
+                    input.Status,
+                    input.SubmittedAtUtc,
+                    input.SubmissionType,
+                    input.ArtifactLabel,
+                    input.Notes,
+                    input.ReviewedAtUtc,
+                    input.ReviewedByUserId),
+                cancellationToken);
+            return Results.Ok(entry);
+        });
+
         group.MapPut("/records/{studentId:guid}", async (
             Guid studentId,
             SaveStudentAcademicRecordInput input,
@@ -315,6 +364,31 @@ public sealed class SaveStudentAcademicRecordInput
     public decimal? CumulativeGpa { get; set; }
     public List<SaveStudentCourseRecordInput> Courses { get; set; } = [];
     public List<SaveStudentTranscriptTermInput> TranscriptTerms { get; set; } = [];
+}
+
+public sealed class SaveAttendanceEntryInput
+{
+    public DateOnly AttendanceDate { get; set; }
+    public string StudentCode { get; set; } = string.Empty;
+    public string StudentName { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public int? MinutesPresent { get; set; }
+    public string? Notes { get; set; }
+    public string RecordedByUserId { get; set; } = string.Empty;
+}
+
+public sealed class SaveAssignmentSubmissionInput
+{
+    public string StudentCode { get; set; } = string.Empty;
+    public string StudentName { get; set; } = string.Empty;
+    public string AssignmentTitle { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public DateTimeOffset SubmittedAtUtc { get; set; }
+    public string SubmissionType { get; set; } = string.Empty;
+    public string ArtifactLabel { get; set; } = string.Empty;
+    public string? Notes { get; set; }
+    public DateTimeOffset? ReviewedAtUtc { get; set; }
+    public string? ReviewedByUserId { get; set; }
 }
 
 public sealed class SaveStudentCourseRecordInput

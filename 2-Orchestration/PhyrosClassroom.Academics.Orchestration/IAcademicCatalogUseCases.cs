@@ -52,6 +52,26 @@ public interface ISaveGradebookEntryUseCase
     Task<GradebookEntry> ExecuteAsync(SaveGradebookEntryRequest request, CancellationToken cancellationToken = default);
 }
 
+public interface IListAttendanceEntriesUseCase
+{
+    Task<IReadOnlyList<AttendanceEntry>> ExecuteAsync(Guid sectionId, CancellationToken cancellationToken = default);
+}
+
+public interface ISaveAttendanceEntryUseCase
+{
+    Task<AttendanceEntry> ExecuteAsync(SaveAttendanceEntryRequest request, CancellationToken cancellationToken = default);
+}
+
+public interface IListAssignmentSubmissionsUseCase
+{
+    Task<IReadOnlyList<AssignmentSubmission>> ExecuteAsync(Guid sectionId, Guid assignmentId, CancellationToken cancellationToken = default);
+}
+
+public interface ISaveAssignmentSubmissionUseCase
+{
+    Task<AssignmentSubmission> ExecuteAsync(SaveAssignmentSubmissionRequest request, CancellationToken cancellationToken = default);
+}
+
 public interface IListStudentAcademicRecordsUseCase
 {
     Task<IReadOnlyList<StudentAcademicRecord>> ExecuteAsync(CancellationToken cancellationToken = default);

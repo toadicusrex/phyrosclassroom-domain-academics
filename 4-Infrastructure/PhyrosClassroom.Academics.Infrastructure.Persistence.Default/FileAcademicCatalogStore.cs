@@ -121,6 +121,60 @@ public sealed class FileAcademicCatalogStore(IOptions<AcademicStorageOptions> op
         return entry;
     }
 
+    public async Task<IReadOnlyList<AttendanceEntry>> ListAttendanceEntriesAsync(Guid sectionId, CancellationToken cancellationToken = default) =>
+        (await ReadListAsync<AttendanceEntry>(GetAttendancePath(), cancellationToken))
+            .Where(entry => entry.SectionId == sectionId)
+            .OrderByDescending(entry => entry.AttendanceDate)
+            .ThenBy(entry => entry.StudentName)
+            .ToList();
+
+    public async Task<AttendanceEntry> SaveAttendanceEntryAsync(AttendanceEntry entry, CancellationToken cancellationToken = default)
+    {
+        var entries = (await ReadListAsync<AttendanceEntry>(GetAttendancePath(), cancellationToken)).ToList();
+        var index = entries.FindIndex(existing =>
+            existing.SectionId == entry.SectionId &&
+            existing.StudentId == entry.StudentId &&
+            existing.AttendanceDate == entry.AttendanceDate);
+        if (index >= 0)
+        {
+            entries[index] = entry;
+        }
+        else
+        {
+            entries.Add(entry);
+        }
+
+        await WriteListAsync(GetAttendancePath(), entries, cancellationToken);
+        return entry;
+    }
+
+    public async Task<IReadOnlyList<AssignmentSubmission>> ListAssignmentSubmissionsAsync(Guid sectionId, Guid assignmentId, CancellationToken cancellationToken = default) =>
+        (await ReadListAsync<AssignmentSubmission>(GetSubmissionsPath(), cancellationToken))
+            .Where(entry => entry.SectionId == sectionId && entry.AssignmentId == assignmentId)
+            .OrderByDescending(entry => entry.SubmittedAtUtc)
+            .ThenBy(entry => entry.StudentName)
+            .ToList();
+
+    public async Task<AssignmentSubmission> SaveAssignmentSubmissionAsync(AssignmentSubmission entry, CancellationToken cancellationToken = default)
+    {
+        var entries = (await ReadListAsync<AssignmentSubmission>(GetSubmissionsPath(), cancellationToken)).ToList();
+        var index = entries.FindIndex(existing =>
+            existing.SectionId == entry.SectionId &&
+            existing.AssignmentId == entry.AssignmentId &&
+            existing.StudentId == entry.StudentId);
+        if (index >= 0)
+        {
+            entries[index] = entry;
+        }
+        else
+        {
+            entries.Add(entry);
+        }
+
+        await WriteListAsync(GetSubmissionsPath(), entries, cancellationToken);
+        return entry;
+    }
+
     public Task<IReadOnlyList<StudentAcademicRecord>> ListRecordsAsync(CancellationToken cancellationToken = default) =>
         ReadListAsync<StudentAcademicRecord>(GetRecordsPath(), cancellationToken);
 
@@ -171,5 +225,7 @@ public sealed class FileAcademicCatalogStore(IOptions<AcademicStorageOptions> op
     private string GetSectionsPath() => Path.Combine(_options.BasePath, "academic-sections.json");
     private string GetRosterPath() => Path.Combine(_options.BasePath, "academic-roster.json");
     private string GetGradebookPath() => Path.Combine(_options.BasePath, "academic-gradebook.json");
+    private string GetAttendancePath() => Path.Combine(_options.BasePath, "academic-attendance.json");
+    private string GetSubmissionsPath() => Path.Combine(_options.BasePath, "academic-submissions.json");
     private string GetRecordsPath() => Path.Combine(_options.BasePath, "academic-records.json");
 }
