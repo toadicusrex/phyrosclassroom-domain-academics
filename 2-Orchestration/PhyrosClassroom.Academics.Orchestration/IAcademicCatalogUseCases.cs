@@ -91,3 +91,8 @@ public interface ISaveStudentAcademicRecordUseCase
 {
     Task<StudentAcademicRecord> ExecuteAsync(SaveStudentAcademicRecordRequest request, CancellationToken cancellationToken = default);
 }
+
+public interface IListAcademicOperationalAlertsUseCase
+{
+    Task<IReadOnlyList<AcademicOperationalAlert>> ExecuteAsync(DateOnly? asOfDate = null, CancellationToken cancellationToken = default);
+}

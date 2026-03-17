@@ -124,6 +124,15 @@ public static class QueryApiEndpointRouteBuilderExtensions
             return summary is null ? Results.NotFound() : Results.Ok(summary);
         });
 
+        group.MapGet("/alerts", async (
+            DateOnly? asOfDate,
+            IListAcademicOperationalAlertsUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var alerts = await useCase.ExecuteAsync(asOfDate, cancellationToken);
+            return Results.Ok(alerts);
+        });
+
         return endpoints;
     }
 }

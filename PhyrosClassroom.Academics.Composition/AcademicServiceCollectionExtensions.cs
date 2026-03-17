@@ -51,6 +51,7 @@ public static class AcademicServiceCollectionExtensions
         services.AddScoped<IListStudentAcademicRecordsUseCase, ListStudentAcademicRecordsUseCase>();
         services.AddScoped<IGetStudentAcademicRecordByStudentIdUseCase, GetStudentAcademicRecordByStudentIdUseCase>();
         services.AddScoped<IGetStudentTranscriptSummaryByStudentIdUseCase, GetStudentTranscriptSummaryByStudentIdUseCase>();
+        services.AddScoped<IListAcademicOperationalAlertsUseCase, ListAcademicOperationalAlertsUseCase>();
 
         return services;
     }

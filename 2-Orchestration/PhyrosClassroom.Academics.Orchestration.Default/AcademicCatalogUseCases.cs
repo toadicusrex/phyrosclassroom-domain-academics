@@ -267,3 +267,115 @@ public sealed class SaveStudentAcademicRecordUseCase(IAcademicCatalogStore store
             },
             cancellationToken);
 }
+
+public sealed class ListAcademicOperationalAlertsUseCase(IAcademicCatalogStore store) : IListAcademicOperationalAlertsUseCase
+{
+    public async Task<IReadOnlyList<AcademicOperationalAlert>> ExecuteAsync(DateOnly? asOfDate = null, CancellationToken cancellationToken = default)
+    {
+        var effectiveDate = asOfDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date);
+        var sections = await store.ListSectionsAsync(cancellationToken);
+        var assignments = await store.ListAssignmentsAsync(cancellationToken);
+        var alerts = new List<AcademicOperationalAlert>();
+
+        foreach (var section in sections)
+        {
+            var roster = await store.ListRosterEntriesAsync(section.SectionId, cancellationToken);
+            var gradebook = await store.ListGradebookEntriesAsync(section.SectionId, cancellationToken);
+            var attendance = await store.ListAttendanceEntriesAsync(section.SectionId, cancellationToken);
+            var sectionAssignments = assignments.Where(assignment => assignment.CourseId == section.CourseId).ToArray();
+
+            foreach (var student in roster.Where(entry => !string.Equals(entry.EnrollmentStatus, "Dropped", StringComparison.OrdinalIgnoreCase)))
+            {
+                var studentGrades = gradebook.Where(entry => entry.StudentId == student.StudentId).ToArray();
+                var failingGrades = studentGrades
+                    .Where(entry =>
+                        entry.ScoreEarned.HasValue &&
+                        entry.ScorePossible.HasValue &&
+                        entry.ScorePossible.Value > 0m &&
+                        entry.ScoreEarned.Value / entry.ScorePossible.Value < 0.70m)
+                    .ToArray();
+
+                if (failingGrades.Length > 0)
+                {
+                    var lowestGrade = failingGrades
+                        .Select(entry => Math.Round(entry.ScoreEarned!.Value / entry.ScorePossible!.Value * 100m, 0))
+                        .DefaultIfEmpty(0m)
+                        .Min();
+
+                    alerts.Add(new AcademicOperationalAlert
+                    {
+                        SectionId = section.SectionId,
+                        SectionCode = section.SectionCode,
+                        CourseTitle = section.CourseTitle,
+                        StudentId = student.StudentId,
+                        StudentCode = student.StudentCode,
+                        StudentName = student.StudentName,
+                        AlertType = "FailingGrade",
+                        Severity = "High",
+                        Message = $"Student has {failingGrades.Length} low gradebook entries; lowest score is {lowestGrade:0}%.",
+                        UpdatedAtUtc = failingGrades.Max(entry => entry.UpdatedAtUtc),
+                    });
+                }
+
+                var studentAttendance = attendance.Where(entry => entry.StudentId == student.StudentId).ToArray();
+                var absences = studentAttendance.Count(entry =>
+                    string.Equals(entry.Status, "Absent", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(entry.Status, "Unexcused", StringComparison.OrdinalIgnoreCase));
+
+                if (absences >= 3)
+                {
+                    alerts.Add(new AcademicOperationalAlert
+                    {
+                        SectionId = section.SectionId,
+                        SectionCode = section.SectionCode,
+                        CourseTitle = section.CourseTitle,
+                        StudentId = student.StudentId,
+                        StudentCode = student.StudentCode,
+                        StudentName = student.StudentName,
+                        AlertType = "AttendanceRisk",
+                        Severity = "Medium",
+                        Message = $"Student has {absences} absence records in this section.",
+                        RelevantDate = studentAttendance
+                            .Where(entry => string.Equals(entry.Status, "Absent", StringComparison.OrdinalIgnoreCase) ||
+                                            string.Equals(entry.Status, "Unexcused", StringComparison.OrdinalIgnoreCase))
+                            .Select(entry => entry.AttendanceDate)
+                            .DefaultIfEmpty(effectiveDate)
+                            .Max(),
+                        UpdatedAtUtc = studentAttendance.Max(entry => entry.UpdatedAtUtc),
+                    });
+                }
+
+                foreach (var assignment in sectionAssignments.Where(assignment => assignment.DueDate < effectiveDate))
+                {
+                    var submission = await store.ListAssignmentSubmissionsAsync(section.SectionId, assignment.AssignmentId, cancellationToken);
+                    var studentSubmission = submission.FirstOrDefault(entry => entry.StudentId == student.StudentId);
+                    if (studentSubmission is null ||
+                        string.Equals(studentSubmission.Status, "Missing", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(studentSubmission.Status, "NotSubmitted", StringComparison.OrdinalIgnoreCase))
+                    {
+                        alerts.Add(new AcademicOperationalAlert
+                        {
+                            SectionId = section.SectionId,
+                            SectionCode = section.SectionCode,
+                            CourseTitle = section.CourseTitle,
+                            StudentId = student.StudentId,
+                            StudentCode = student.StudentCode,
+                            StudentName = student.StudentName,
+                            AlertType = "MissingSubmission",
+                            Severity = "Medium",
+                            Message = $"Missing submission for \"{assignment.Title}\" due {assignment.DueDate:yyyy-MM-dd}.",
+                            RelevantDate = assignment.DueDate,
+                            UpdatedAtUtc = studentSubmission?.UpdatedAtUtc ?? assignment.UpdatedAtUtc,
+                        });
+                    }
+                }
+            }
+        }
+
+        return alerts
+            .OrderByDescending(alert => alert.Severity, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(alert => alert.RelevantDate ?? DateOnly.MaxValue)
+            .ThenBy(alert => alert.StudentName, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+}
