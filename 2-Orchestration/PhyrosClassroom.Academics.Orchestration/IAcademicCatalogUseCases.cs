@@ -82,6 +82,11 @@ public interface IGetStudentAcademicRecordByStudentIdUseCase
     Task<StudentAcademicRecord?> ExecuteAsync(Guid studentId, CancellationToken cancellationToken = default);
 }
 
+public interface IGetStudentTranscriptSummaryByStudentIdUseCase
+{
+    Task<StudentTranscriptSummary?> ExecuteAsync(Guid studentId, CancellationToken cancellationToken = default);
+}
+
 public interface ISaveStudentAcademicRecordUseCase
 {
     Task<StudentAcademicRecord> ExecuteAsync(SaveStudentAcademicRecordRequest request, CancellationToken cancellationToken = default);

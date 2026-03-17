@@ -130,3 +130,26 @@ public sealed class StudentTranscriptTerm
     public decimal? TermGpa { get; set; }
     public List<StudentCourseRecord> Courses { get; set; } = [];
 }
+
+public sealed class StudentTranscriptSummary
+{
+    public Guid StudentId { get; set; }
+    public string StudentCode { get; set; } = string.Empty;
+    public string StudentName { get; set; } = string.Empty;
+    public string GradeLevel { get; set; } = string.Empty;
+    public decimal? CumulativeGpa { get; set; }
+    public decimal TotalCreditsEarned { get; set; }
+    public int CompletedCourseCount { get; set; }
+    public string AcademicStanding { get; set; } = string.Empty;
+    public List<StudentTranscriptTermSummary> Terms { get; set; } = [];
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+}
+
+public sealed class StudentTranscriptTermSummary
+{
+    public string SchoolYear { get; set; } = string.Empty;
+    public string TermName { get; set; } = string.Empty;
+    public decimal? TermGpa { get; set; }
+    public decimal CreditsEarned { get; set; }
+    public int CourseCount { get; set; }
+}

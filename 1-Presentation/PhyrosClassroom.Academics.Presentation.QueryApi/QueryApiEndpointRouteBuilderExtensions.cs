@@ -115,6 +115,15 @@ public static class QueryApiEndpointRouteBuilderExtensions
             return record is null ? Results.NotFound() : Results.Ok(record);
         });
 
+        group.MapGet("/records/{studentId:guid}/transcript-summary", async (
+            Guid studentId,
+            IGetStudentTranscriptSummaryByStudentIdUseCase useCase,
+            CancellationToken cancellationToken) =>
+        {
+            var summary = await useCase.ExecuteAsync(studentId, cancellationToken);
+            return summary is null ? Results.NotFound() : Results.Ok(summary);
+        });
+
         return endpoints;
     }
 }

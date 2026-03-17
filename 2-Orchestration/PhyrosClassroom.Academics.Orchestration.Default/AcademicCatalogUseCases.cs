@@ -199,6 +199,57 @@ public sealed class GetStudentAcademicRecordByStudentIdUseCase(IAcademicCatalogS
         store.GetRecordByStudentIdAsync(studentId, cancellationToken);
 }
 
+public sealed class GetStudentTranscriptSummaryByStudentIdUseCase(IAcademicCatalogStore store) : IGetStudentTranscriptSummaryByStudentIdUseCase
+{
+    public async Task<StudentTranscriptSummary?> ExecuteAsync(Guid studentId, CancellationToken cancellationToken = default)
+    {
+        var record = await store.GetRecordByStudentIdAsync(studentId, cancellationToken);
+        if (record is null)
+        {
+            return null;
+        }
+
+        var termSummaries = record.TranscriptTerms
+            .OrderBy(term => term.SchoolYear, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(term => term.TermName, StringComparer.OrdinalIgnoreCase)
+            .Select(term => new StudentTranscriptTermSummary
+            {
+                SchoolYear = term.SchoolYear,
+                TermName = term.TermName,
+                TermGpa = term.TermGpa,
+                CreditsEarned = term.Courses.Sum(course => course.CreditsEarned ?? 0m),
+                CourseCount = term.Courses.Count,
+            })
+            .ToList();
+
+        var totalCredits = record.Courses.Sum(course => course.CreditsEarned ?? 0m);
+        var completedCourseCount = record.Courses.Count(course =>
+            string.Equals(course.Status, "Completed", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(course.Status, "Passed", StringComparison.OrdinalIgnoreCase));
+
+        return new StudentTranscriptSummary
+        {
+            StudentId = record.StudentId,
+            StudentCode = record.StudentCode,
+            StudentName = record.StudentName,
+            GradeLevel = record.GradeLevel,
+            CumulativeGpa = record.CumulativeGpa,
+            TotalCreditsEarned = totalCredits,
+            CompletedCourseCount = completedCourseCount,
+            AcademicStanding = record.CumulativeGpa switch
+            {
+                >= 3.8m => "High Honors",
+                >= 3.5m => "Honors",
+                >= 2.0m => "Good Standing",
+                not null => "Academic Support",
+                _ => "In Progress",
+            },
+            Terms = termSummaries,
+            UpdatedAtUtc = record.UpdatedAtUtc,
+        };
+    }
+}
+
 public sealed class SaveStudentAcademicRecordUseCase(IAcademicCatalogStore store) : ISaveStudentAcademicRecordUseCase
 {
     public Task<StudentAcademicRecord> ExecuteAsync(SaveStudentAcademicRecordRequest request, CancellationToken cancellationToken = default) =>
